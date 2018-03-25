@@ -1,5 +1,7 @@
 /*
- * Copyright (C) 2012 The CyanogenMod Project
+ * Copyright (C) 2015 The CyanogenMod Project
+ *           (C) 2017 The LineageOS Project
+ *           (C) 2018 The AOKP Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,12 +32,37 @@ import java.net.NetworkInterface;
 import java.security.MessageDigest;
 
 public class Utilities {
-    public static String getUniqueID(Context context) {
+    public static String getDeviceID(Context context) {
         final String id = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
         return digest(context.getPackageName() + id);
     }
 
-    public static String getCarrier(Context context) {
+    public static String getDeviceName() {
+        return SystemProperties.get("ro.product.device", Build.DEVICE);
+    }
+
+    public static String getBuildVersion() {
+        return SystemProperties.get("ro.build.version.release", Build.VERSION.RELEASE);
+    }
+
+    public static String getBuildDate() {
+        return SystemProperties.get("ro.build.date.utc", "0");
+    }
+
+    public static String getReleaseType() {
+        return SystemProperties.get("ro.aokp.releasetype", "unofficial");
+    }
+
+    public static String getCountryCode(Context context) {
+        TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+        String countryCode = tm.getNetworkCountryIso();
+        if (TextUtils.isEmpty(countryCode)) {
+            countryCode = "Unknown";
+        }
+        return countryCode;
+    }
+
+    public static String getCarrierName(Context context) {
         TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
         String carrier = tm.getNetworkOperatorName();
         if (TextUtils.isEmpty(carrier)) {
@@ -53,26 +80,9 @@ public class Utilities {
         return carrierId;
     }
 
-    public static String getCountryCode(Context context) {
-        TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-        String countryCode = tm.getNetworkCountryIso();
-        if (TextUtils.isEmpty(countryCode)) {
-            countryCode = "Unknown";
-        }
-        return countryCode;
-    }
-
-    public static String getDevice() {
-        return SystemProperties.get("ro.lineage.device", Build.PRODUCT);
-    }
-
-    public static String getModVersion() {
-        return SystemProperties.get("ro.lineage.version", Build.DISPLAY);
-    }
-
     public static String digest(String input) {
         try {
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            MessageDigest md = MessageDigest.getInstance("MD5");
             return new BigInteger(1, md.digest(input.getBytes())).toString(16).toUpperCase();
         } catch (Exception e) {
             return null;

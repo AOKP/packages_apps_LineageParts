@@ -27,6 +27,6 @@
 
     <PreferenceScreen
         android:title="@string/preview_data_title"
-        android:fragment="org.lineageos.lineageparts.lineagestats.PreviewData" />
+        android:fragment="com.android.settings.cmstats.PreviewData" />
 
 </PreferenceScreen>
