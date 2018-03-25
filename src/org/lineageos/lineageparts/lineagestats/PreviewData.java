@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2012 The CyanogenMod Project
- *               2017 The LineageOS Project
+ * Copyright (C) 2015 The CyanogenMod Project
+ *           (C) 2017 The LineageOS Project
+ *           (C) 2018 The AOKP Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,11 +26,13 @@ import org.lineageos.lineageparts.R;
 import org.lineageos.lineageparts.SettingsPreferenceFragment;
 
 public class PreviewData extends SettingsPreferenceFragment {
-    private static final String UNIQUE_ID = "preview_id";
-    private static final String DEVICE = "preview_device";
-    private static final String VERSION = "preview_version";
-    private static final String COUNTRY = "preview_country";
-    private static final String CARRIER = "preview_carrier";
+    private static final String DEVICE_ID = "preview_device_id";
+    private static final String DEVICE_NAME = "preview_device_name";
+    private static final String BUILD_VERSION = "preview_build_version";
+    private static final String BUILD_DATE = "preview_build_date";
+    private static final String RELEASE_TYPE = "preview_release_type";
+    private static final String COUNTRY_CODE = "preview_country_code";
+    private static final String CARRIER_NAME = "preview_carrier_name";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -40,10 +43,12 @@ public class PreviewData extends SettingsPreferenceFragment {
         final PreferenceScreen prefSet = getPreferenceScreen();
         final Context context = getActivity();
 
-        prefSet.findPreference(UNIQUE_ID).setSummary(Utilities.getUniqueID(context));
-        prefSet.findPreference(DEVICE).setSummary(Utilities.getDevice());
-        prefSet.findPreference(VERSION).setSummary(Utilities.getModVersion());
-        prefSet.findPreference(COUNTRY).setSummary(Utilities.getCountryCode(context));
-        prefSet.findPreference(CARRIER).setSummary(Utilities.getCarrier(context));
+        prefSet.findPreference(DEVICE_ID).setSummary(Utilities.getDeviceID(context));
+        prefSet.findPreference(DEVICE_NAME).setSummary(Utilities.getDeviceName());
+        prefSet.findPreference(BUILD_VERSION).setSummary(Utilities.getBuildVersion());
+        prefSet.findPreference(BUILD_DATE).setSummary(Utilities.getBuildDate());
+        prefSet.findPreference(RELEASE_TYPE).setSummary(Utilities.getReleaseType());
+        prefSet.findPreference(COUNTRY_CODE).setSummary(Utilities.getCountryCode(context));
+        prefSet.findPreference(CARRIER_NAME).setSummary(Utilities.getCarrierName(context));
     }
 }
