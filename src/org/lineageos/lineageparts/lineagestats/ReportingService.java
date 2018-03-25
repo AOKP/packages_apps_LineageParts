@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2015 The CyanogenMod Project
- *               2017 The LineageOS Project
+ *           (C) 2017 The LineageOS Project
+ *           (C) 2018 The AOKP Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,36 +39,36 @@ public class ReportingService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         JobScheduler js = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
 
-        String deviceId = Utilities.getUniqueID(getApplicationContext());
-        String deviceName = Utilities.getDevice();
-        String deviceVersion = Utilities.getModVersion();
-        String deviceCountry = Utilities.getCountryCode(getApplicationContext());
-        String deviceCarrier = Utilities.getCarrier(getApplicationContext());
-        String deviceCarrierId = Utilities.getCarrierId(getApplicationContext());
+        String deviceId = Utilities.getDeviceID(getApplicationContext());
+        String deviceName = Utilities.getDeviceName();
+        String buildVersion = Utilities.getBuildVersion();
+        String buildDate = Utilities.getBuildDate();
+        String releaseType = Utilities.getReleaseType();
+        String countryCode = Utilities.getCountryCode(getApplicationContext());
+        String carrierName = Utilities.getCarrierName(getApplicationContext());
+        String carrierId = Utilities.getCarrierId(getApplicationContext());
 
         final int lineageOrgJobId = AnonymousStats.getNextJobId(getApplicationContext());
 
         if (DEBUG) Log.d(TAG, "scheduling job id: " + lineageOrgJobId);
 
-        PersistableBundle lineageBundle = new PersistableBundle();
-        lineageBundle.putString(StatsUploadJobService.KEY_DEVICE_NAME, deviceName);
-        lineageBundle.putString(StatsUploadJobService.KEY_UNIQUE_ID, deviceId);
-        lineageBundle.putString(StatsUploadJobService.KEY_VERSION, deviceVersion);
-        lineageBundle.putString(StatsUploadJobService.KEY_COUNTRY, deviceCountry);
-        lineageBundle.putString(StatsUploadJobService.KEY_CARRIER, deviceCarrier);
-        lineageBundle.putString(StatsUploadJobService.KEY_CARRIER_ID, deviceCarrierId);
-        lineageBundle.putLong(StatsUploadJobService.KEY_TIMESTAMP, System.currentTimeMillis());
-
-        // set job types
-        lineageBundle.putInt(StatsUploadJobService.KEY_JOB_TYPE,
-                StatsUploadJobService.JOB_TYPE_LINEAGEORG);
+        PersistableBundle bundle = new PersistableBundle();
+        bundle.putString(StatsUploadJobService.KEY_DEVICE_ID, deviceId);
+        bundle.putString(StatsUploadJobService.KEY_DEVICE_NAME, deviceName);
+        bundle.putString(StatsUploadJobService.KEY_BUILD_VERSION, buildVersion);
+        bundle.putString(StatsUploadJobService.KEY_BUILD_DATE, buildDate);
+        bundle.putString(StatsUploadJobService.KEY_RELEASE_TYPE, releaseType);
+        bundle.putString(StatsUploadJobService.KEY_COUNTRY_CODE, countryCode);
+        bundle.putString(StatsUploadJobService.KEY_CARRIER_NAME, carrierName);
+        bundle.putString(StatsUploadJobService.KEY_CARRIER_ID, carrierId);
+        bundle.putLong(StatsUploadJobService.KEY_TIMESTAMP, System.currentTimeMillis());
 
         // schedule lineage stats upload
         js.schedule(new JobInfo.Builder(lineageOrgJobId, new ComponentName(getPackageName(),
                 StatsUploadJobService.class.getName()))
                 .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
                 .setMinimumLatency(1000)
-                .setExtras(lineageBundle)
+                .setExtras(bundle)
                 .setPersisted(true)
                 .build());
 
