@@ -78,6 +78,7 @@
 
 <!--
     <PreferenceCategory
+        android:key="status_bar_battery_key"
         android:title="@string/status_bar_battery_title">
 
         <lineageos.preference.LineageSystemSettingListPreference
