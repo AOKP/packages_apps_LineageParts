@@ -16,6 +16,7 @@
  */
 package org.lineageos.lineageparts.statusbar;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v7.preference.Preference;
@@ -24,15 +25,20 @@ import android.support.v7.preference.PreferenceScreen;
 import android.support.v7.preference.Preference.OnPreferenceChangeListener;
 import android.text.format.DateFormat;
 import android.text.TextUtils;
+import android.util.ArraySet;
 import android.view.View;
 
 import lineageos.preference.LineageSystemSettingListPreference;
 
 import org.lineageos.lineageparts.R;
 import org.lineageos.lineageparts.SettingsPreferenceFragment;
+import org.lineageos.lineageparts.search.BaseSearchIndexProvider;
+import org.lineageos.lineageparts.search.Searchable;
+
+import java.util.Set;
 
 public class StatusBarSettings extends SettingsPreferenceFragment
-        implements OnPreferenceChangeListener {
+        implements OnPreferenceChangeListener, Searchable {
 
     private static final String CATEGORY_CLOCK = "status_bar_clock_key";
 
@@ -59,19 +65,22 @@ public class StatusBarSettings extends SettingsPreferenceFragment
     private LineageSystemSettingListPreference mStatusBarBatteryShowPercent;
 
     private PreferenceCategory mStatusBarClockCategory;
+    private PreferenceScreen mNetworkTrafficPref;
+
+    private static boolean sHasNotch;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.status_bar_settings);
 
-        final boolean hasNotch = getResources().getBoolean(
+        mNetworkTrafficPref = (PreferenceScreen) findPreference(NETWORK_TRAFFIC_SETTINGS);
+
+        sHasNotch = getResources().getBoolean(
                 org.lineageos.platform.internal.R.bool.config_haveNotch);
 
-        if (hasNotch) {
-            PreferenceScreen networkTrafficPreferenceScreen =
-                    (PreferenceScreen) findPreference(NETWORK_TRAFFIC_SETTINGS);
-            getPreferenceScreen().removePreference(networkTrafficPreferenceScreen);
+        if (sHasNotch) {
+            getPreferenceScreen().removePreference(mNetworkTrafficPref);
         }
 
         mStatusBarAmPm =
@@ -117,6 +126,8 @@ public class StatusBarSettings extends SettingsPreferenceFragment
             mStatusBarAmPm.setEnabled(false);
             mStatusBarAmPm.setSummary(R.string.status_bar_am_pm_info);
         }
+
+        final boolean disallowCenteredClock = sHasNotch || getNetworkTrafficStatus() != 0;
 
         // Adjust status bar preferences for RTL
         if (getResources().getConfiguration().getLayoutDirection() == View.LAYOUT_DIRECTION_RTL) {
@@ -173,4 +184,42 @@ public class StatusBarSettings extends SettingsPreferenceFragment
         }
         mQuickPulldown.setSummary(summary);
     }
+
+    private void updateNetworkTrafficStatus(int clockPosition) {
+        if (sHasNotch) {
+            // Unconditional no network traffic for you
+            return;
+        }
+
+        boolean isClockCentered = clockPosition == 1;
+        mNetworkTrafficPref.setEnabled(!isClockCentered);
+        mNetworkTrafficPref.setSummary(getResources().getString(isClockCentered ?
+                R.string.network_traffic_disabled_clock :
+                R.string.network_traffic_settings_summary
+        ));
+    }
+
+    private int getNetworkTrafficStatus() {
+        return LineageSettings.Secure.getInt(getActivity().getContentResolver(),
+                LineageSettings.Secure.NETWORK_TRAFFIC_MODE, 0);
+    }
+
+    private int getClockPosition() {
+        return LineageSettings.System.getInt(getActivity().getContentResolver(),
+                STATUS_BAR_CLOCK_STYLE, 2);
+    }
+
+    public static final Searchable.SearchIndexProvider SEARCH_INDEX_DATA_PROVIDER =
+            new BaseSearchIndexProvider() {
+
+        @Override
+        public Set<String> getNonIndexableKeys(Context context) {
+            final Set<String> result = new ArraySet<String>();
+
+            if (sHasNotch) {
+                result.add(NETWORK_TRAFFIC_SETTINGS);
+            }
+            return result;
+        }
+    };
 }
